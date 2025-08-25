@@ -11,6 +11,7 @@ TEMPLATES=(                rocky_8 alma_8
 DEPLOY_DIR=/staging/osg-images
 LOG_DIR=/var/log/vmu-packer
 PACKER_CACHE_PARENT=/staging/osg-images/working
+DATA_DIR=/usr/share/vmu-packer
 
 TIMEOUT=7200  # should be greater than vmu-rebuild-one's TIMEOUT+KILL_TIMEOUT
 KILL_TIMEOUT=300
@@ -113,6 +114,12 @@ generate_image () {
 
     iecho ""
     iecho "Starting vmu-rebuild-one $template.$arch; logs at $log_file"
+
+    if [[ ! -d $DATA_DIR/$template.$arch ]]; then
+        iecho "Template directory $template does not exist for arch $arch; skipping"
+        return 0
+    fi
+
     ret=0; timeout -k "$KILL_TIMEOUT" "$TIMEOUT" vmu-rebuild-one "$template.$arch" "$output_file" >> "$log_file" 2>&1 || ret=$?
 
     if [[ $ret != 0 ]]; then
